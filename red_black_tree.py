@@ -47,6 +47,13 @@ class Node:
         return self.left
     def getRightChild(self):
         return self.right
+    def getUncle(self):
+        if self.isRoot():
+            return None
+        elif self.getParent().getKey() > self.getKey():
+            return self.getParent().getRightChild()
+        else:
+            return self.getParent().getLeftChild()
     def deleteParent(self):
         self.parent = None
     def deleteLeftChild(self):
@@ -69,6 +76,20 @@ class Node:
         return self.key
     def getValue(self):
         return self.value
+    def isLeftChild(self):
+        if self.isRoot():
+            return False
+        if self.getParent().getLeftChild() == self:
+            return True
+        else:
+            return False
+    def isRightChild(self):
+        if self.isRoot():
+            return False
+        if self.getParent().getRightChild() == self:
+            return True
+        else:
+            return False
     def print(self):
         print(str(self.key) + " " + str(self.value))
 
@@ -106,6 +127,7 @@ class RedBlackTree:
             self.size += 1
             v.setParent(n.getParent())
             del n
+        self.insertCase(v)
     def remove(self, key):
         if self.isEmpty():
             return
@@ -149,6 +171,67 @@ class RedBlackTree:
             del n.left
             del n.right
             del n
+        self.size -= 1
+    def insertCase(self, current):
+        if current.isRoot():
+            current.setColor("Black")
+        elif current.getParent().getColor() == "Black":
+            current.setColor("Red")
+        elif current.getParent().getColor() == "Red":
+            if current.getParent().getUncle().getColor() == "Red":
+                current.setColor("Red")
+                current.getParent().setColor("Black")
+                current.getParent().getUncle().setColor("Black")
+                current.getParent().getParent().setColor("Red")
+                self.insertCase(current.getParent().getParent())
+            else:
+                if current.isLeftChild() != current.getParent().isLeftChild():
+                    if current.isLeftChild():
+                        current.getParent().getParent().setRightChild(current)
+                        current.getParent().setLeftChild(current.getRightChild())
+                        current.getRightChild().setParent(current.getParent())
+                        current.setRightChild(current.getParent())
+                        current.setParent(current.getParent().getParent())
+                        current.getRightChild().setParent(current)
+                        current = current.getRightChild()
+                    else:
+                        current.getParent().getParent().setLeftChild(current)
+                        current.getParent().setRightChild(current.getLeftChild())
+                        current.getLeftChild().setParent(current.getParent())
+                        current.setLeftChild(current.getParent())
+                        current.setParent(current.getParent().getParent())
+                        current.getLeftChild().setParent(current)
+                        current = current.getLeftChild()
+                current.setColor("Red")
+                current = current.getParent()
+                if current.getParent().isRoot():
+                    self.root = current
+                current.setColor("Black")
+                current.getParent().setColor("Red")
+                if current.isLeftChild():
+                    current.getParent().setLeftChild(current.getRightChild())
+                    current.getRightChild().setParent(current.getParent())
+                    if current.getParent().isLeftChild():
+                        current.getParent().getParent().setLeftChild(current)
+                    elif current.getParent().isRightChild():
+                        current.getParent().getParent().setRightChild(current)
+                    current.setRightChild(current.getParent())
+                    current.setParent(current.getParent().getParent())
+                    current.getRightChild().setParent(current)
+                else:
+                    current.getParent().setRightChild(current.getLeftChild())
+                    current.getLeftChild().setParent(current.getParent())
+                    if current.getParent().isLeftChild():
+                        current.getParent().getParent().setLeftChild(current)
+                    elif current.getParent().isRightChild():
+                        current.getParent().getParent().setRightChild(current)
+                    current.setLeftChild(current.getParent())
+                    current.setParent(current.getParent().getParent())
+                    current.getLeftChild().setParent(current)
+
+
+
+
     def printInOrder(self, current = None):
         if current == None:
             current = self.root
